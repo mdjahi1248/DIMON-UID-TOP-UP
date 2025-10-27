@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GM TOP UP BD</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(180deg, #06b97d, #038b59);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .container {
+      background: #fff;
+      width: 92%;
+      max-width: 420px;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    h2 { text-align: center; color: #038b59; }
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 8px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background: #038b59;
+      color: white;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover { background: #06b97d; }
+    .hidden { display: none; }
+    .package {
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 8px;
+      margin-top: 6px;
+      cursor: pointer;
+      background: #f5f5f5;
+    }
+    .package:hover { background: #d2f8e7; }
+    .section { margin-top: 15px; }
+    .order-box {
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 8px;
+      margin-top: 6px;
+      background: #fafafa;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- Signup Page -->
+    <div id="signupPage">
+      <h2>🔰 রেজিস্ট্রেশন</h2>
+      <input id="signupName" placeholder="তোমার নাম">
+      <input id="signupEmail" type="email" placeholder="ইমেইল">
+      <input id="signupPassword" type="password" placeholder="পাসওয়ার্ড">
+      <button onclick="signup()">রেজিস্টার</button>
+      <p style="text-align:center;margin-top:10px;">
+        <a href="#" onclick="showLogin()">ইতিমধ্যে অ্যাকাউন্ট আছে? লগইন করুন</a>
+      </p>
+    </div>
+
+    <!-- Login Page -->
+    <div id="loginPage" class="hidden">
+      <h2>🔓 লগইন</h2>
+      <input id="loginEmail" type="email" placeholder="ইমেইল">
+      <input id="loginPassword" type="password" placeholder="পাসওয়ার্ড">
+      <button onclick="login()">লগইন</button>
+      <p style="text-align:center;margin-top:10px;">
+        <a href="#" onclick="showSignup()">নতুন অ্যাকাউন্ট তৈরি করুন</a>
+      </p>
+    </div>
+
+    <!-- Home Page -->
+    <div id="homePage" class="hidden">
+      <h2>🎮 Free Fire Top Up</h2>
+      <div class="section">
+        <label>Game UID:</label>
+        <input id="gameUID" placeholder="যেমন: 123456789">
+      </div>
+
+      <div class="section">
+        <label>Top-Up Category:</label>
+        <select id="category" onchange="showPackages()">
+          <option value="uid">UID Top-Up</option>
+          <option value="weekly">Weekly / Monthly</option>
+          <option value="level">Level Up Pass</option>
+        </select>
+      </div>
+
+      <div id="packageList" class="section"></div>
+
+      <div id="paymentSection" class="section hidden">
+        <p id="paymentAmount" style="font-weight:bold;color:#038b59;"></p>
+        <button onclick="showPayment()">পরবর্তী ধাপ</button>
+      </div>
+
+      <div id="finalSection" class="section hidden">
+        <h3>💳 Payment Method</h3>
+        <p>বিকাশ: <b id="bkashNum">01765326575</b> 
+          <button onclick="copyText('bkashNum')">Copy</button></p>
+        <p>নগদ: <b id="nagadNum">01765326575</b> 
+          <button onclick="copyText('nagadNum')">Copy</button></p>
+
+        <input id="payerNumber" placeholder="যে নাম্বার থেকে পাঠিয়েছেন">
+        <input id="trxid" placeholder="TrxID (যেমন: 8G5HJ2K3L)">
+        <button onclick="confirmPayment()">✅ অর্ডার কনফার্ম করুন</button>
+      </div>
+
+      <div class="section">
+        <button onclick="showMyOrders()">🧾 My Orders</button>
+      </div>
+    </div>
+
+    <!-- My Orders Page -->
+    <div id="ordersPage" class="hidden">
+      <h2>📋 My Orders</h2>
+      <div id="orderList"></div>
+      <button onclick="goHome()">🏠 হোমে ফিরে যান</button>
+    </div>
+  </div>
+
+  <script>
+    let users = JSON.parse(localStorage.getItem("users") || "[]");
+    let orders = JSON.parse(localStorage.getItem("orders") || "[]");
+    let selectedPackage = null;
+
+    function showLogin() {
+      signupPage.classList.add("hidden");
+      loginPage.classList.remove("hidden");
+    }
+    function showSignup() {
+      loginPage.classList.add("hidden");
+      signupPage.classList.remove("hidden");
+    }
+
+    function signup() {
+      const name = signupName.value;
+      const email = signupEmail.value;
+      const pass = signupPassword.value;
+      if (!email || !pass) return alert("সব ঘর পূরণ করুন!");
+      if (users.find(u => u.email === email)) return alert("এই ইমেইল আগে ব্যবহার করা হয়েছে!");
+      users.push({ name, email, pass });
+      localStorage.setItem("users", JSON.stringify(users));
+      alert("রেজিস্ট্রেশন সফল! এখন লগইন করুন।");
+      showLogin();
+    }
+
+    function login() {
+      const email = loginEmail.value;
+      const pass = loginPassword.value;
+      const user = users.find(u => u.email === email && u.pass === pass);
+      if (!user) return alert("ইমেইল বা পাসওয়ার্ড ভুল!");
+      alert("লগইন সফল ✅");
+      loginPage.classList.add("hidden");
+      homePage.classList.remove("hidden");
+      showPackages();
+    }
+
+    const packages = {
+      uid: [
+        ["25 Diamond", 19], ["50 Diamond", 34], ["75 Diamond", 52], ["100 Diamond", 68],
+        ["115 Diamond", 76], ["240 Diamond", 152], ["355 Diamond", 229], ["505 Diamond", 322],
+        ["610 Diamond", 384], ["850 Diamond", 535], ["1090 Diamond", 686],
+        ["1240 Diamond", 766], ["1850 Diamond", 1149], ["2530 Diamond", 1537],
+        ["5060 Diamond", 3073], ["10120 Diamond", 6146]
+      ],
+      weekly: [
+        ["Weekly Membership", 152], ["Monthly Membership", 751],
+        ["2X Weekly", 303], ["2X Monthly", 1501],
+        ["5X Weekly", 758], ["10X Weekly", 1515],
+        ["1X Weekly + 1X Monthly", 902], ["2X Weekly + 2X Monthly", 1804]
+      ],
+      level: [
+        ["Level Up Pass - Level 6", 39], ["Level Up Pass - Level 10", 68],
+        ["Level Up Pass - Level 15", 68], ["Level Up Pass - Level 20", 68],
+        ["Level Up Pass - Level 25", 68], ["Level Up Pass - Level 30", 96],
+        ["Full Level Up Pass ⭐", 392]
+      ]
+    };
+
+    function showPackages() {
+      const cat = category.value;
+      packageList.innerHTML = "";
+      packages[cat].forEach(p => {
+        const div = document.createElement("div");
+        div.className = "package";
+        div.textContent = `${p[0]} — BDT ${p[1]}`;
+        div.onclick = () => selectPackage(p);
+        packageList.appendChild(div);
+      });
+      paymentSection.classList.add("hidden");
+      finalSection.classList.add("hidden");
+    }
+
+    function selectPackage(p) {
+      selectedPackage = p;
+      paymentAmount.textContent = `🪙 নির্বাচিত প্যাকেজ: ${p[0]} | মূল্য: BDT ${p[1]}`;
+      paymentSection.classList.remove("hidden");
+      window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function showPayment() {
+      if (!gameUID.value) return alert("গেমের UID দিন!");
+      finalSection.classList.remove("hidden");
+      window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function copyText(id) {
+      const text = document.getElementById(id).innerText;
+      navigator.clipboard.writeText(text);
+      alert("নাম্বার কপি করা হয়েছে 📋");
+    }
+
+    async function confirmPayment() {
+      if (!payerNumber.value || !trxid.value) {
+        alert("সব ঘর পূরণ করুন!");
+        return;
+      }
+
+      const order = {
+        package: selectedPackage[0],
+        price: selectedPackage[1],
+        uid: gameUID.value,
+        payer: payerNumber.value,
+        trxid: trxid.value,
+        status: "Pending",
+        date: new Date().toLocaleString()
+      };
+      orders.push(order);
+      localStorage.setItem("orders", JSON.stringify(orders));
+
+      const formData = { ...order };
+
+      try {
+        await fetch("https://formspree.io/f/xwprgkyj", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData)
+        });
+        alert("✅ অর্ডার কনফার্ম হয়েছে!\nধন্যবাদ ❤️");
+        showMyOrders();
+      } catch (e) {
+        alert("❌ Formspree তে মেসেজ পাঠানো যায়নি!");
+      }
+    }
+
+    function showMyOrders() {
+      homePage.classList.add("hidden");
+      ordersPage.classList.remove("hidden");
+      orderList.innerHTML = "";
+      if (orders.length === 0) {
+        orderList.innerHTML = "<p>কোন অর্ডার নেই।</p>";
+      } else {
+        orders.forEach(o => {
+          const div = document.createElement("div");
+          div.className = "order-box";
+          div.innerHTML = `
+            <b>${o.package}</b> - BDT ${o.price}<br>
+            UID: ${o.uid}<br>
+            TxID: ${o.trxid}<br>
+            Status: ${o.status}<br>
+            Date: ${o.date}
+          `;
+          orderList.appendChild(div);
+        });
+      }
+    }
+
+    function goHome() {
+      ordersPage.classList.add("hidden");
+      homePage.classList.remove("hidden");
+    }
+  </script>
+</body>
+</html>
